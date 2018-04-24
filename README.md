@@ -7,7 +7,107 @@ nvidia-docker run -itd -p 2222:2222 -v /root/code/Distribute_MNIST:/root/code/Di
 
 nvidia-docker run -itd -p 2222:2222 -v /root/code/Distribute_MNIST:/root/code/Distribute_MNIST tensorflow/tensorflow:latest  python /root/code/Distribute_MNIST/distributed.py --job_name="worker" --ps_hosts="192.168.1.173:2222" --worker_hosts="192.168.1.171:2222,192.168.1.172:2222"  --task_index=1 
 
+# Expected result
+```
+NODE 1
 
+
+1524487685.116428: Worker 0: traing step 8054 dome (global step:9960)
+1524487685.160202: Worker 0: traing step 8055 dome (global step:9961)
+1524487685.203343: Worker 0: traing step 8056 dome (global step:9962)
+1524487685.246421: Worker 0: traing step 8057 dome (global step:9963)
+1524487685.292357: Worker 0: traing step 8058 dome (global step:9965)
+1524487685.336263: Worker 0: traing step 8059 dome (global step:9966)
+1524487685.382817: Worker 0: traing step 8060 dome (global step:9967)
+1524487685.424566: Worker 0: traing step 8061 dome (global step:9968)
+1524487685.467782: Worker 0: traing step 8062 dome (global step:9969)
+1524487685.512781: Worker 0: traing step 8063 dome (global step:9971)
+1524487685.554451: Worker 0: traing step 8064 dome (global step:9972)
+1524487685.596355: Worker 0: traing step 8065 dome (global step:9973)
+1524487685.639382: Worker 0: traing step 8066 dome (global step:9974)
+1524487685.684103: Worker 0: traing step 8067 dome (global step:9976)
+1524487685.730389: Worker 0: traing step 8068 dome (global step:9977)
+1524487685.774431: Worker 0: traing step 8069 dome (global step:9978)
+1524487685.818752: Worker 0: traing step 8070 dome (global step:9979)
+1524487685.864362: Worker 0: traing step 8071 dome (global step:9981)
+1524487685.910818: Worker 0: traing step 8072 dome (global step:9982)
+1524487685.955815: Worker 0: traing step 8073 dome (global step:9983)
+1524487686.001664: Worker 0: traing step 8074 dome (global step:9984)
+1524487686.047667: Worker 0: traing step 8075 dome (global step:9986)
+1524487686.091223: Worker 0: traing step 8076 dome (global step:9987)
+1524487686.134904: Worker 0: traing step 8077 dome (global step:9988)
+1524487686.177393: Worker 0: traing step 8078 dome (global step:9989)
+1524487686.221982: Worker 0: traing step 8079 dome (global step:9991)
+1524487686.271100: Worker 0: traing step 8080 dome (global step:9992)
+1524487686.319529: Worker 0: traing step 8081 dome (global step:9993)
+1524487686.365306: Worker 0: traing step 8082 dome (global step:9994)
+1524487686.409443: Worker 0: traing step 8083 dome (global step:9996)
+1524487686.453835: Worker 0: traing step 8084 dome (global step:9997)
+1524487686.497427: Worker 0: traing step 8085 dome (global step:9998)
+1524487686.541502: Worker 0: traing step 8086 dome (global step:9999)
+1524487686.584212: Worker 0: traing step 8087 dome (global step:10001)
+Training ends @ 1524487686.584364
+Training elapsed time:366.604071 s
+After 10000 training step(s), validation cross entropy = 1147.88
+```
+
+```
+NODE 2
+
+1524487681.483467: Worker 1: traing step 1887 dome (global step:9864)
+1524487681.615457: Worker 1: traing step 1888 dome (global step:9869)
+1524487681.764761: Worker 1: traing step 1889 dome (global step:9872)
+1524487681.941379: Worker 1: traing step 1890 dome (global step:9876)
+1524487682.077306: Worker 1: traing step 1891 dome (global step:9881)
+1524487682.226872: Worker 1: traing step 1892 dome (global step:9885)
+1524487682.375240: Worker 1: traing step 1893 dome (global step:9889)
+1524487682.578290: Worker 1: traing step 1894 dome (global step:9893)
+1524487682.779062: Worker 1: traing step 1895 dome (global step:9898)
+1524487682.971550: Worker 1: traing step 1896 dome (global step:9902)
+1524487683.193175: Worker 1: traing step 1897 dome (global step:9907)
+1524487683.435355: Worker 1: traing step 1898 dome (global step:9913)
+1524487683.599336: Worker 1: traing step 1899 dome (global step:9919)
+1524487683.760519: Worker 1: traing step 1900 dome (global step:9923)
+1524487683.929460: Worker 1: traing step 1901 dome (global step:9927)
+1524487684.096199: Worker 1: traing step 1902 dome (global step:9932)
+1524487684.260782: Worker 1: traing step 1903 dome (global step:9937)
+1524487684.441629: Worker 1: traing step 1904 dome (global step:9941)
+1524487684.595703: Worker 1: traing step 1905 dome (global step:9946)
+1524487684.784011: Worker 1: traing step 1906 dome (global step:9950)
+1524487684.976657: Worker 1: traing step 1907 dome (global step:9953)
+1524487685.189852: Worker 1: traing step 1908 dome (global step:9958)
+1524487685.403831: Worker 1: traing step 1909 dome (global step:9964)
+1524487685.606131: Worker 1: traing step 1910 dome (global step:9970)
+1524487685.776894: Worker 1: traing step 1911 dome (global step:9976)
+1524487685.945085: Worker 1: traing step 1912 dome (global step:9981)
+1524487686.128778: Worker 1: traing step 1913 dome (global step:9985)
+1524487686.308813: Worker 1: traing step 1914 dome (global step:9990)
+1524487686.474578: Worker 1: traing step 1915 dome (global step:9995)
+1524487686.657338: Worker 1: traing step 1916 dome (global step:10000)
+Training ends @ 1524487686.657494
+Training elapsed time:366.428102 s
+After 10000 training step(s), validation cross entropy = 1122.46
+```
+
+```
+PS node
+/usr/local/lib/python2.7/dist-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+Successfully downloaded train-images-idx3-ubyte.gz 9912422 bytes.
+Extracting MNIST_data/train-images-idx3-ubyte.gz
+Successfully downloaded train-labels-idx1-ubyte.gz 28881 bytes.
+Extracting MNIST_data/train-labels-idx1-ubyte.gz
+Successfully downloaded t10k-images-idx3-ubyte.gz 1648877 bytes.
+Extracting MNIST_data/t10k-images-idx3-ubyte.gz
+Successfully downloaded t10k-labels-idx1-ubyte.gz 4542 bytes.
+Extracting MNIST_data/t10k-labels-idx1-ubyte.gz
+job_name : ps
+task_index : 0
+2018-04-23 12:37:55.762710: I tensorflow/core/platform/cpu_feature_guard.cc:140] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2018-04-23 12:37:55.763640: I tensorflow/core/distributed_runtime/rpc/grpc_channel.cc:215] Initialize GrpcChannelCache for job ps -> {0 -> localhost:2222}
+2018-04-23 12:37:55.763658: I tensorflow/core/distributed_runtime/rpc/grpc_channel.cc:215] Initialize GrpcChannelCache for job worker -> {0 -> 192.168.1.171:2222, 1 -> 192.168.1.172:2222}
+2018-04-23 12:37:55.764195: I tensorflow/core/distributed_runtime/rpc/grpc_server_lib.cc:324] Started server with target: grpc://localhost:2222
+```
 # TensorFlow分布式MNIST手写字体识别实例
 
 ## 代码运行步骤
