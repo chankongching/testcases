@@ -1,3 +1,10 @@
+# Command to use to execute job
+Mounting the /root/code/Distribute_MNIST path into docker
+nvidia-docker run -itd -p 2222:2222 -v /root/code/Distribute_MNIST:/root/code/Distribute_MNIST tensorflow/tensorflow:latest  python /root/code/Distribute_MNIST/distributed.py --job_name="ps" --ps_hosts="192.168.1.173:2222" --worker_hosts="192.168.1.171:2222,192.168.1.172:2222" --task_index=0 
+nvidia-docker run -itd -p 2222:2222 -v /root/code/Distribute_MNIST:/root/code/Distribute_MNIST tensorflow/tensorflow:latest  python /root/code/Distribute_MNIST/distributed.py --job_name="worker" --ps_hosts="192.168.1.173:2222" --worker_hosts="192.168.1.171:2222,192.168.1.172:2222"  --task_index=0 
+nvidia-docker run -itd -p 2222:2222 -v /root/code/Distribute_MNIST:/root/code/Distribute_MNIST tensorflow/tensorflow:latest  python /root/code/Distribute_MNIST/distributed.py --job_name="worker" --ps_hosts="192.168.1.173:2222" --worker_hosts="192.168.1.171:2222,192.168.1.172:2222"  --task_index=1 
+
+
 # TensorFlow分布式MNIST手写字体识别实例
 
 ## 代码运行步骤
