@@ -1,6 +1,10 @@
 # -*- coding:utf-8 -*-
 import tensorflow as tf
 
+flags = tf.app.flags
+# 选择日志资料夹
+flags.DEFINE_string('data_dir', "/root/code", 'job name: worker or ps')
+
 def read_data(file_queue):
     reader = tf.TextLineReader(skip_header_lines=1)
     key, value = reader.read(file_queue)
@@ -29,7 +33,7 @@ def create_pipeline(filename, batch_size, num_epochs=None):
 
     return example_batch, label_batch
 
-x_train_batch, y_train_batch = create_pipeline('Iris-train.csv', 50, num_epochs=1000)
+x_train_batch, y_train_batch = create_pipeline(FLAGS.data_dir + '/Iris-train.csv', 50, num_epochs=1000)
 x_test, y_test = create_pipeline('Iris-test.csv', 60)
 
 init_op = tf.global_variables_initializer()
