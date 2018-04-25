@@ -8,16 +8,16 @@ from tensorflow.examples.tutorials.mnist import input_data
 flags = tf.app.flags
 IMAGE_PIXELS = 28
 # 定义默认训练参数和数据路径
-flags.DEFINE_string('data_dir', 'MNIST_data/', 'Directory  for storing mnist data')
+flags.DEFINE_string('data_dir', '../input/MNIST_data/', 'Directory  for storing mnist data')
 flags.DEFINE_integer('hidden_units', 100, 'Number of units in the hidden layer of the NN')
 flags.DEFINE_integer('train_steps', 10000, 'Number of training steps to perform')
 flags.DEFINE_integer('batch_size', 100, 'Training batch size ')
 flags.DEFINE_float('learning_rate', 0.01, 'Learning rate')
 # 定义分布式参数
 # 参数服务器parameter server节点
-flags.DEFINE_string('ps_hosts', '192.168.1.173:2222', 'Comma-separated list of hostname:port pairs')
+flags.DEFINE_string('ps_hosts', '', 'Comma-separated list of hostname:port pairs')
 # 两个worker节点
-flags.DEFINE_string('worker_hosts', '192.168.1.171:2222,192.168.1.172:2222',
+flags.DEFINE_string('worker_hosts', '',
                     'Comma-separated list of hostname:port pairs')
 # 设置job name参数
 flags.DEFINE_string('job_name', None, 'job name: worker or ps')
