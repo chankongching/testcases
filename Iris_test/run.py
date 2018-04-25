@@ -37,7 +37,7 @@ def create_pipeline(filename, batch_size, num_epochs=None):
     return example_batch, label_batch
 
 x_train_batch, y_train_batch = create_pipeline(FLAGS.data_dir + '/Iris-train.csv', 50, num_epochs=1000)
-x_test, y_test = create_pipeline('Iris-test.csv', 60)
+x_test, y_test = create_pipeline(FLAGS.data_dir + '/Iris-test.csv', 60)
 
 init_op = tf.global_variables_initializer()
 local_init_op = tf.local_variables_initializer()  # local variables like epoch_num, batch_size
