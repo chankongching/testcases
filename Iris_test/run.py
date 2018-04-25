@@ -91,6 +91,10 @@ try:
     while True:
         # x_train_batch_float = convert_to_float(x_train_batch,'training')
         # y_train_batch_float = convert_to_float(y_train_batch,'training')
+        print "x train batch: "
+        print x_train_batch
+        print "y train batch: "
+        print y_train_batch
         example, label = sess.run([x_train_batch, y_train_batch])
         local_step += 1
         now = time.time()
