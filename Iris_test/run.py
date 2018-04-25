@@ -26,6 +26,8 @@ def read_data(file_queue):
     return tf.stack([SepalLengthCm,SepalWidthCm,PetalLengthCm,PetalWidthCm]), preprocess_op
 
 def create_pipeline(filename, batch_size, num_epochs=None):
+    saver = tf.train.Saver()
+    
     file_queue = tf.train.string_input_producer([filename], num_epochs=num_epochs)
     example, label = read_data(file_queue)
 
@@ -111,7 +113,7 @@ with tf.Session() as sess:
     finally:
         coord.request_stop()
 
-    saver = tf.train.Saver()
+    # saver = tf.train.Saver()
     time_end = time.time()
     print 'Training ends @ %f' % time_end
     train_time = time_end - time_begin
