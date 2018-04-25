@@ -106,19 +106,19 @@ with tf.Session() as sess:
             # Store the step
             # save_path = saver.save(sess, FLAGS.log_dir + '/model.ckpt')
             # print("Model saved in path: %s" % save_path)
-        saver = tf.train.Saver()
-        time_end = time.time()
-        print 'Training ends @ %f' % time_end
-        train_time = time_end - time_begin
-        print 'Training elapsed time:%f s' % train_time
-        # Storing Session file
-        save_path = saver.save(sess, FLAGS.log_dir + '/model.ckpt')
-        print("Model saved in path: %s" % save_path)
     except tf.errors.OutOfRangeError:
         print ('Done reading')
     finally:
         coord.request_stop()
 
+    saver = tf.train.Saver()
+    time_end = time.time()
+    print 'Training ends @ %f' % time_end
+    train_time = time_end - time_begin
+    print 'Training elapsed time:%f s' % train_time
+    # Storing Session file
+    save_path = saver.save(sess, FLAGS.log_dir + '/model.ckpt')
+    print("Model saved in path: %s" % save_path)
 
     coord.join(threads)
     sess.close()
