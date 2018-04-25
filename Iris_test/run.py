@@ -3,8 +3,9 @@ import tensorflow as tf
 
 flags = tf.app.flags
 # 选择日志资料夹
-flags.DEFINE_string('data_dir', "/root/code", 'job name: worker or ps')
-
+flags.DEFINE_string('data_dir', "/root/code", 'Code location')
+# 选择日志资料夹
+flags.DEFINE_string('log_dir', "/root/result", 'Directory to store result and logs')
 # Defining flags value
 FLAGS = flags.FLAGS
 
@@ -75,18 +76,32 @@ with tf.Session() as sess:
     # Retrieve a single instance:
     try:
         #while not coord.should_stop():
+        local_step = 0
         while True:
             # x_train_batch_float = convert_to_float(x_train_batch,'training')
             # y_train_batch_float = convert_to_float(y_train_batch,'training')
             example, label = sess.run([x_train_batch, y_train_batch])
-            print ("Example = ")
-            print (example)
-            print ("label = ")
-            print (label)
+            local_step += 1
+            now = time.time()
+            # print ("Example = ")
+            # print (example)
+            # print ("label = ")
+            # print (label)
+            
+            # For Complete session control
+            # print '%f: Worker %d: traing step %d dome (global step:%d)' % (now, FLAGS.task_index, local_step, step)
+
+            # For distributed task is available
+            # print '%f: Worker %d: training step %d done' % (now, FLAGS.task_index, local_step)
+
+            # Just to print the count
+            print '%f: training step %d done' % (now, local_step)
     except tf.errors.OutOfRangeError:
         print ('Done reading')
     finally:
         coord.request_stop()
 
     coord.join(threads)
+    save_path = saver.save(sess, FLAGS.log_dir + '/model.ckpt')
+    print("Model saved in path: %s" % save_path)
     sess.close()
