@@ -80,6 +80,8 @@ with tf.Session() as sess:
     # Retrieve a single instance:
     try:
         #while not coord.should_stop():
+        time_begin = time.time()
+        print 'Traing begins @ %f' % time_begin
         local_step = 0
         while True:
             # x_train_batch_float = convert_to_float(x_train_batch,'training')
@@ -104,6 +106,13 @@ with tf.Session() as sess:
             # Store the step
             # save_path = saver.save(sess, FLAGS.log_dir + '/model.ckpt')
             # print("Model saved in path: %s" % save_path)
+        time_end = time.time()
+        print 'Training ends @ %f' % time_end
+        train_time = time_end - time_begin
+        print 'Training elapsed time:%f s' % train_time
+        # Storing Session file
+        save_path = saver.save(sess, FLAGS.log_dir + '/model.ckpt')
+        print("Model saved in path: %s" % save_path)
     except tf.errors.OutOfRangeError:
         print ('Done reading')
     finally:
