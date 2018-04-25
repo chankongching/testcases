@@ -67,13 +67,13 @@ x_test, y_test = create_pipeline(FLAGS.data_dir + '/Iris-test.csv', 60)
 init_op = tf.global_variables_initializer()
 local_init_op = tf.local_variables_initializer()  # local variables like epoch_num, batch_size
 
-# Add ops to save and restore all the variables.
-saver = tf.train.Saver()
-
 with tf.Session() as sess:
     sess.run(init_op)
     sess.run(local_init_op)
 
+    # Add ops to save and restore all the variables.
+    saver = tf.train.Saver()
+    
     # Start populating the filename queue.
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(coord=coord)
