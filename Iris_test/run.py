@@ -1,6 +1,9 @@
 # -*- coding:utf-8 -*-
 import tensorflow as tf
 
+x_train_batch, y_train_batch = create_pipeline(FLAGS.data_dir + '/Iris-train.csv', 50, num_epochs=1000)
+x_test, y_test = create_pipeline(FLAGS.data_dir + '/Iris-test.csv', 60)
+
 flags = tf.app.flags
 # 选择日志资料夹
 flags.DEFINE_string('data_dir', "/root/code", 'job name: worker or ps')
@@ -36,8 +39,27 @@ def create_pipeline(filename, batch_size, num_epochs=None):
 
     return example_batch, label_batch
 
-x_train_batch, y_train_batch = create_pipeline(FLAGS.data_dir + '/Iris-train.csv', 50, num_epochs=1000)
-x_test, y_test = create_pipeline(FLAGS.data_dir + '/Iris-test.csv', 60)
+def convert_to_float(data_set, mode):
+    new_set = []
+    try:
+        if mode == 'training':
+            for data in data_set:
+                new_set.append([float(x) for x in data[:len(data)-1]] + [data[len(data)-1]])
+
+        elif mode == 'test':
+            for data in data_set:
+                new_set.append([float(x) for x in data])
+
+        else:
+            print('Invalid mode, program will exit.')
+            exit()
+
+        return new_set
+
+    except ValueError as v:
+        print(v)
+        print('Invalid data set format, program will exit.')
+        exit()
 
 init_op = tf.global_variables_initializer()
 local_init_op = tf.local_variables_initializer()  # local variables like epoch_num, batch_size
@@ -53,8 +75,12 @@ with tf.Session() as sess:
     try:
         #while not coord.should_stop():
         while True:
+            x_train_batch_float = convert_to_float(x_train_batch,'training')
+            y_train_batch_float = convert_to_float(y_train_batch,'training')
             example, label = sess.run([x_train_batch, y_train_batch])
+            print ("Example = ")
             print (example)
+            print ("label = ")
             print (label)
     except tf.errors.OutOfRangeError:
         print ('Done reading')
