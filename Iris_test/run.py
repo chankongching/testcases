@@ -5,6 +5,9 @@ flags = tf.app.flags
 # 选择日志资料夹
 flags.DEFINE_string('data_dir', "/root/code", 'job name: worker or ps')
 
+# Defining flags value
+FLAGS = flags.FLAGS
+
 def read_data(file_queue):
     reader = tf.TextLineReader(skip_header_lines=1)
     key, value = reader.read(file_queue)
