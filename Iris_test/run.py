@@ -75,7 +75,7 @@ with tf.Session() as sess:
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(coord=coord)
     # Add ops to save and restore all the variables.
-    saver = tf.train.Saver()
+    # saver = tf.train.Saver()
 
     # Retrieve a single instance:
     try:
@@ -106,6 +106,7 @@ with tf.Session() as sess:
             # Store the step
             # save_path = saver.save(sess, FLAGS.log_dir + '/model.ckpt')
             # print("Model saved in path: %s" % save_path)
+        saver = tf.train.Saver()
         time_end = time.time()
         print 'Training ends @ %f' % time_end
         train_time = time_end - time_begin
@@ -117,6 +118,7 @@ with tf.Session() as sess:
         print ('Done reading')
     finally:
         coord.request_stop()
+
 
     coord.join(threads)
     sess.close()
