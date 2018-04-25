@@ -26,8 +26,6 @@ def read_data(file_queue):
     return tf.stack([SepalLengthCm,SepalWidthCm,PetalLengthCm,PetalWidthCm]), preprocess_op
 
 def create_pipeline(filename, batch_size, num_epochs=None):
-    saver = tf.train.Saver()
-    
     file_queue = tf.train.string_input_producer([filename], num_epochs=num_epochs)
     example, label = read_data(file_queue)
 
@@ -66,61 +64,66 @@ def convert_to_float(data_set, mode):
 x_train_batch, y_train_batch = create_pipeline(FLAGS.data_dir + '/Iris-train.csv', 50, num_epochs=1000)
 x_test, y_test = create_pipeline(FLAGS.data_dir + '/Iris-test.csv', 60)
 
+sess = tf.Session()
+#init_op = sess.run(tf.global_variables_initializer())
 init_op = tf.global_variables_initializer()
 local_init_op = tf.local_variables_initializer()  # local variables like epoch_num, batch_size
 
-with tf.Session() as sess:
-    sess.run(init_op)
-    sess.run(local_init_op)
+#with tf.Session() as sess:
+sess.run(init_op)
+sess.run(local_init_op)
 
-    # Start populating the filename queue.
-    coord = tf.train.Coordinator()
-    threads = tf.train.start_queue_runners(coord=coord)
-    # Add ops to save and restore all the variables.
-    # saver = tf.train.Saver()
+#Create a saver object which will save all the variables
+saver = tf.train.Saver()
 
-    # Retrieve a single instance:
-    try:
-        #while not coord.should_stop():
-        time_begin = time.time()
-        print 'Traing begins @ %f' % time_begin
-        local_step = 0
-        while True:
-            # x_train_batch_float = convert_to_float(x_train_batch,'training')
-            # y_train_batch_float = convert_to_float(y_train_batch,'training')
-            example, label = sess.run([x_train_batch, y_train_batch])
-            local_step += 1
-            now = time.time()
-            # print ("Example = ")
-            # print (example)
-            # print ("label = ")
-            # print (label)
+# Start populating the filename queue.
+coord = tf.train.Coordinator()
+threads = tf.train.start_queue_runners(coord=coord)
+# Add ops to save and restore all the variables.
+# saver = tf.train.Saver()
 
-            # For Complete session control
-            # print '%f: Worker %d: traing step %d dome (global step:%d)' % (now, FLAGS.task_index, local_step, step)
+# Retrieve a single instance:
+try:
+    #while not coord.should_stop():
+    time_begin = time.time()
+    print 'Traing begins @ %f' % time_begin
+    local_step = 0
+    while True:
+        # x_train_batch_float = convert_to_float(x_train_batch,'training')
+        # y_train_batch_float = convert_to_float(y_train_batch,'training')
+        example, label = sess.run([x_train_batch, y_train_batch])
+        local_step += 1
+        now = time.time()
+        # print ("Example = ")
+        # print (example)
+        # print ("label = ")
+        # print (label)
 
-            # For distributed task is available
-            # print '%f: Worker %d: training step %d done' % (now, FLAGS.task_index, local_step)
+        # For Complete session control
+        # print '%f: Worker %d: traing step %d dome (global step:%d)' % (now, FLAGS.task_index, local_step, step)
 
-            # Just to print the count
-            print '%f: training step %d done' % (now, local_step)
+        # For distributed task is available
+        # print '%f: Worker %d: training step %d done' % (now, FLAGS.task_index, local_step)
 
-            # Store the step
-            # save_path = saver.save(sess, FLAGS.log_dir + '/model.ckpt')
-            # print("Model saved in path: %s" % save_path)
-    except tf.errors.OutOfRangeError:
-        print ('Done reading')
-    finally:
-        coord.request_stop()
+        # Just to print the count
+        print '%f: training step %d done' % (now, local_step)
 
-    # saver = tf.train.Saver()
-    time_end = time.time()
-    print 'Training ends @ %f' % time_end
-    train_time = time_end - time_begin
-    print 'Training elapsed time:%f s' % train_time
-    # Storing Session file
-    save_path = saver.save(sess, FLAGS.log_dir + '/model.ckpt')
-    print("Model saved in path: %s" % save_path)
+        # Store the step
+        # save_path = saver.save(sess, FLAGS.log_dir + '/model.ckpt')
+        # print("Model saved in path: %s" % save_path)
+except tf.errors.OutOfRangeError:
+    print ('Done reading')
+finally:
+    coord.request_stop()
 
-    coord.join(threads)
-    sess.close()
+# saver = tf.train.Saver()
+time_end = time.time()
+print 'Training ends @ %f' % time_end
+train_time = time_end - time_begin
+print 'Training elapsed time:%f s' % train_time
+# Storing Session file
+save_path = saver.save(sess, FLAGS.log_dir + '/model.ckpt')
+print("Model saved in path: %s" % save_path)
+
+coord.join(threads)
+sess.close()
