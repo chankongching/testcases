@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import tensorflow as tf
+import time
 
 flags = tf.app.flags
 # 选择日志资料夹
@@ -87,7 +88,7 @@ with tf.Session() as sess:
             # print (example)
             # print ("label = ")
             # print (label)
-            
+
             # For Complete session control
             # print '%f: Worker %d: traing step %d dome (global step:%d)' % (now, FLAGS.task_index, local_step, step)
 
