@@ -8,7 +8,7 @@ from tensorflow.examples.tutorials.mnist import input_data
 flags = tf.app.flags
 IMAGE_PIXELS = 28
 # 定义默认训练参数和数据路径
-flags.DEFINE_string('data_dir', '../input/MNIST_data/', 'Directory  for storing mnist data')
+flags.DEFINE_string('data_dir', './input/MNIST_data/', 'Directory  for storing mnist data')
 flags.DEFINE_integer('hidden_units', 100, 'Number of units in the hidden layer of the NN')
 flags.DEFINE_integer('train_steps', 10000, 'Number of training steps to perform')
 flags.DEFINE_integer('batch_size', 100, 'Training batch size ')
@@ -26,7 +26,7 @@ flags.DEFINE_integer('task_index', None, 'Index of task within the job')
 # 选择异步并行，同步并行
 flags.DEFINE_integer("issync", None, "是否采用分布式的同步模式，1表示同步模式，0表示异步模式")
 # 选择日志资料夹
-flags.DEFINE_string('log_dir', "/root/result", 'job name: worker or ps')
+flags.DEFINE_string('log_dir', "./result/", 'job name: worker or ps')
 
 FLAGS = flags.FLAGS
 
