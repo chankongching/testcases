@@ -76,8 +76,8 @@ with tf.Session() as sess:
     try:
         #while not coord.should_stop():
         while True:
-            x_train_batch_float = convert_to_float(x_train_batch,'training')
-            y_train_batch_float = convert_to_float(y_train_batch,'training')
+            # x_train_batch_float = convert_to_float(x_train_batch,'training')
+            # y_train_batch_float = convert_to_float(y_train_batch,'training')
             example, label = sess.run([x_train_batch, y_train_batch])
             print ("Example = ")
             print (example)
