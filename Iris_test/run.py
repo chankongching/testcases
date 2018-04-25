@@ -102,8 +102,8 @@ with tf.Session() as sess:
             print '%f: training step %d done' % (now, local_step)
 
             # Store the step
-            save_path = saver.save(sess, FLAGS.log_dir + '/model.ckpt')
-            print("Model saved in path: %s" % save_path)
+            # save_path = saver.save(sess, FLAGS.log_dir + '/model.ckpt')
+            # print("Model saved in path: %s" % save_path)
     except tf.errors.OutOfRangeError:
         print ('Done reading')
     finally:
