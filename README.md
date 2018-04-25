@@ -1,11 +1,11 @@
 # Command to use to execute job
 Mounting the /root/code/Distribute_MNIST path into docker
 
-nvidia-docker run -itd -p 2222:2222 -v /root/code/Distribute_MNIST:/root/code/Distribute_MNIST tensorflow/tensorflow:latest  python /root/code/Distribute_MNIST/distributed.py --job_name="ps" --ps_hosts="192.168.1.173:2222" --worker_hosts="192.168.1.171:2222,192.168.1.172:2222" --task_index=0 
+nvidia-docker run -itd -p 2222:2222 -v /root/code:/root/code -v /root/result:/root/result tensorflow/tensorflow:latest  python /root/code/Distribute_MNIST/distributed.py --job_name="ps" --ps_hosts="192.168.1.173:2222" --worker_hosts="192.168.1.171:2222,192.168.1.172:2222" --task_index=0
 
-nvidia-docker run -itd -p 2222:2222 -v /root/code/Distribute_MNIST:/root/code/Distribute_MNIST tensorflow/tensorflow:latest  python /root/code/Distribute_MNIST/distributed.py --job_name="worker" --ps_hosts="192.168.1.173:2222" --worker_hosts="192.168.1.171:2222,192.168.1.172:2222"  --task_index=0 
+nvidia-docker run -itd -p 2222:2222 -v /root/code:/root/code -v /root/result:/root/result tensorflow/tensorflow:latest  python /root/code/Distribute_MNIST/distributed.py --job_name="worker" --ps_hosts="192.168.1.173:2222" --worker_hosts="192.168.1.171:2222,192.168.1.172:2222"  --task_index=0
 
-nvidia-docker run -itd -p 2222:2222 -v /root/code/Distribute_MNIST:/root/code/Distribute_MNIST tensorflow/tensorflow:latest  python /root/code/Distribute_MNIST/distributed.py --job_name="worker" --ps_hosts="192.168.1.173:2222" --worker_hosts="192.168.1.171:2222,192.168.1.172:2222"  --task_index=1 
+nvidia-docker run -itd -p 2222:2222 -v /root/code:/root/code -v /root/result:/root/result tensorflow/tensorflow:latest  python /root/code/Distribute_MNIST/distributed.py --job_name="worker" --ps_hosts="192.168.1.173:2222" --worker_hosts="192.168.1.171:2222,192.168.1.172:2222"  --task_index=1
 
 # Expected result
 ```
@@ -111,7 +111,7 @@ task_index : 0
 # TensorFlow分布式MNIST手写字体识别实例
 
 ## 代码运行步骤
-ps 节点执行： 
+ps 节点执行：
 
 ```
 python distributed.py --job_name=ps --task_index=0
@@ -183,7 +183,7 @@ TF的实现分为了单机实现和分布式实现，在分布式实现中，需
 在介绍tensorflow的分布式训练之前，先说下参数服务器的概念。
 前面说道， 当你的模型越来越大， 模型的参数越来越多，多到模型参数的更新，一台机器的性能都不够的时候， 很自然的我们就会想到把参数分开放到不同的机器去存储和更新。
 因为碰到上面提到的那些问题， 所有参数服务器就被单独拧出来， 于是就有了参数服务器的概念。 参数服务器可以是多台机器组成的集群， 这个就有点类似分布式的存储架构了， 涉及到数据的同步，一致性等等， 一般是key-value的形式，可以理解为一个分布式的key-value内存数据库，然后再加上一些参数更新的操作。 详细的细节可以去google一下， 这里就不详细说了。 反正就是当性能不够的时候，
- 几百亿的参数分散到不同的机器上去保存和更新，解决参数存储和更新的性能问题。 
+ 几百亿的参数分散到不同的机器上去保存和更新，解决参数存储和更新的性能问题。
 借用上面的小明算题的例子，小明觉得自己算加法都算不过来了， 于是就叫了10个小明过来一起帮忙算。
 ### gRPC (google remote procedure call)
 TensorFlow分布式并行基于gRPC通信框架，其中包括一个master创建Session，还有多个worker负责执行计算图中的任务。

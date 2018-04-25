@@ -25,6 +25,8 @@ flags.DEFINE_string('job_name', None, 'job name: worker or ps')
 flags.DEFINE_integer('task_index', None, 'Index of task within the job')
 # 选择异步并行，同步并行
 flags.DEFINE_integer("issync", None, "是否采用分布式的同步模式，1表示同步模式，0表示异步模式")
+# 选择日志资料夹
+flags.DEFINE_string('log_dir', "/root/result", 'job name: worker or ps')
 
 FLAGS = flags.FLAGS
 
@@ -54,7 +56,7 @@ def main(unused_argv):
 
       is_chief = (FLAGS.task_index == 0)
       # worker_device = '/job:worker/task%d/cpu:0' % FLAGS.task_index
-          # Between-graph replication
+      # Between-graph replication
       with tf.device(tf.train.replica_device_setter(
       worker_device="/job:worker/task:%d" % FLAGS.task_index,
       cluster=cluster)):
@@ -62,7 +64,7 @@ def main(unused_argv):
   #            cluster=cluster
   #    )):
           global_step = tf.Variable(0, name='global_step', trainable=False)  # 创建纪录全局训练步数变量
-  
+
           hid_w = tf.Variable(tf.truncated_normal([IMAGE_PIXELS * IMAGE_PIXELS, FLAGS.hidden_units],
                                                   stddev=1.0 / IMAGE_PIXELS), name='hid_w')
           hid_b = tf.Variable(tf.zeros([FLAGS.hidden_units]), name='hid_b')
@@ -70,22 +72,26 @@ def main(unused_argv):
           sm_w = tf.Variable(tf.truncated_normal([FLAGS.hidden_units, 10],
                                                  stddev=1.0 / math.sqrt(FLAGS.hidden_units)), name='sm_w')
           sm_b = tf.Variable(tf.zeros([10]), name='sm_b')
-  
+
           x = tf.placeholder(tf.float32, [None, IMAGE_PIXELS * IMAGE_PIXELS])
           y_ = tf.placeholder(tf.float32, [None, 10])
-  
+
           hid_lin = tf.nn.xw_plus_b(x, hid_w, hid_b)
           hid = tf.nn.relu(hid_lin)
-  
+
           y = tf.nn.softmax(tf.nn.xw_plus_b(hid, sm_w, sm_b))
           cross_entropy = -tf.reduce_sum(y_ * tf.log(tf.clip_by_value(y, 1e-10, 1.0)))
-  
+
           opt = tf.train.AdamOptimizer(FLAGS.learning_rate)
-  
+
           train_step = opt.minimize(cross_entropy, global_step=global_step)
           # 生成本地的参数初始化操作init_op
           init_op = tf.global_variables_initializer()
-          train_dir = tempfile.mkdtemp()
+
+          # Add ops to save and restore all the variables.
+          saver = tf.train.Saver()
+
+          train_dir = FLAGS.log_dir
           sv = tf.train.Supervisor(is_chief=is_chief, logdir=train_dir, init_op=init_op, recovery_wait_secs=1,
                                  global_step=global_step)
 
@@ -95,7 +101,7 @@ def main(unused_argv):
               print 'Worker %d: Waiting for session to be initaialized...' % FLAGS.task_index
           sess = sv.prepare_or_wait_for_session(server.target)
           print 'Worker %d: Session initialization  complete.' % FLAGS.task_index
-  
+
           time_begin = time.time()
           print 'Traing begins @ %f' % time_begin
 
@@ -103,13 +109,13 @@ def main(unused_argv):
           while True:
               batch_xs, batch_ys = mnist.train.next_batch(FLAGS.batch_size)
               train_feed = {x: batch_xs, y_: batch_ys}
-  
+
               _, step = sess.run([train_step, global_step], feed_dict=train_feed)
               local_step += 1
-  
+
               now = time.time()
               print '%f: Worker %d: traing step %d dome (global step:%d)' % (now, FLAGS.task_index, local_step, step)
-  
+
               if step >= FLAGS.train_steps:
                   break
 
@@ -117,6 +123,10 @@ def main(unused_argv):
           print 'Training ends @ %f' % time_end
           train_time = time_end - time_begin
           print 'Training elapsed time:%f s' % train_time
+
+          # Storing Session file
+          save_path = saver.save(sess, "/tmp/model.ckpt")
+          print("Model saved in path: %s" % save_path)
 
           val_feed = {x: mnist.validation.images, y_: mnist.validation.labels}
           val_xent = sess.run(cross_entropy, feed_dict=val_feed)
