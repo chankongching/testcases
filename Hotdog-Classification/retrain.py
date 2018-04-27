@@ -83,7 +83,22 @@ from tensorflow.python.framework import tensor_shape
 from tensorflow.python.platform import gfile
 from tensorflow.python.util import compat
 
-FLAGS = None
+flags = tf.app.flags
+
+# 参数服务器parameter server节点
+flags.DEFINE_string('ps_hosts', '', 'Comma-separated list of hostname:port pairs')
+# 两个worker节点
+flags.DEFINE_string('worker_hosts', '',
+                    'Comma-separated list of hostname:port pairs')
+# 设置job name参数
+flags.DEFINE_string('job_name', None, 'job name: worker or ps')
+# 设置任务的索引
+flags.DEFINE_integer('task_index', None, 'Index of task within the job')
+# 选择异步并行，同步并行
+flags.DEFINE_integer("issync", None, "是否采用分布式的同步模式，1表示同步模式，0表示异步模式")
+
+# FLAGS = None
+FLAGS = flags.FLAGS
 
 # These are all parameters that are tied to the particular model architecture
 # we're using for Inception v3. These include things like tensor names and their
@@ -1059,4 +1074,8 @@ if __name__ == '__main__':
       """
   )
   FLAGS, unparsed = parser.parse_known_args()
-  tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
+
+  # Test printing all arguments
+  print (FLAGS.image_dir)
+  print (FLAGS.task_index)
+  # tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
