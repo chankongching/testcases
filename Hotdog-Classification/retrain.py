@@ -800,7 +800,7 @@ def main(_):
     # worker_device = '/job:worker/task%d/cpu:0' % FLAGS.task_index
     # Between-graph replication
     with tf.device(tf.train.replica_device_setter(
-    worker_device="/job:localhost/replica:0/task:0/cpu:0", # "/job:worker/task:%d" % FLAGS.task_index,
+    worker_device="/job:worker/task:%d" % FLAGS.task_index,
     cluster=cluster)):
 
       global_step = tf.Variable(0, name='global_step', trainable=False)  # 创建纪录全局训练步数变量
