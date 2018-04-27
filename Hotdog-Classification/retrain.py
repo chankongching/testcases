@@ -792,6 +792,10 @@ def main(_):
   # 创建集群
   num_worker = len(worker_spec)
   print ("Number of worker = " + str(num_worker))
+  print ("ps_spec = ")
+  print(*ps_spec)
+  print ("worker_spec = ")
+  print(*worker_spec)
   cluster = tf.train.ClusterSpec({'ps': ps_spec, 'worker': worker_spec})
   print ("After defining Cluster")
   print ("Job name = " + FLAGS.job_name)
