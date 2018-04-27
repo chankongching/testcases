@@ -796,7 +796,10 @@ def main(_):
   print ("After defining Cluster")
   print ("Job name = " + FLAGS.job_name)
   print ("task index = " + str(FLAGS.task_index))
-  server = tf.train.Server(cluster, job_name=FLAGS.job_name, task_index=FLAGS.task_index)
+  try:
+      server = tf.train.Server(cluster, job_name=FLAGS.job_name, task_index=FLAGS.task_index)
+  except:
+      print "Unexpected error:", sys.exc_info()[0]
   print ("After defining server")
   if FLAGS.job_name == 'ps':
     server.join()
