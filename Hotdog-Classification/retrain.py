@@ -861,7 +861,7 @@ def main(_):
       # Add ops to save and restore all the variables.
       saver = tf.train.Saver()
 
-      sv = tf.train.Supervisor(is_chief=is_chief, logdir=summaries_dir, init_op=init, recovery_wait_secs=1,
+      sv = tf.train.Supervisor(is_chief=is_chief, logdir=FLAGS.summaries_dir, init_op=init, recovery_wait_secs=1,
                              global_step=global_step)
 
       sess.run(init)
