@@ -791,7 +791,9 @@ def main(_):
 
   # 创建集群
   num_worker = len(worker_spec)
+  print ("Number of worker = " + str(num_worker))
   cluster = tf.train.ClusterSpec({'ps': ps_spec, 'worker': worker_spec})
+  print ("After defining Cluster")
   server = tf.train.Server(cluster, job_name=FLAGS.job_name, task_index=FLAGS.task_index)
   print ("After defining server")
   if FLAGS.job_name == 'ps':
