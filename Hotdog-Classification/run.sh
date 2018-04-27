@@ -1,5 +1,5 @@
 #!/bin/bash
-git pull origin master
+# git pull origin master
 
 export IP=`ifconfig -a| grep inet | grep 192.168 | awk {'print $2'}| cut -d':' -f2`
 
