@@ -777,13 +777,13 @@ def main(_):
   tf.gfile.MakeDirs(FLAGS.summaries_dir)
 
   if FLAGS.job_name is None or FLAGS.job_name == '':
-    raise ValueError('Must specify an explicit job_name !')
+      raise ValueError('Must specify an explicit job_name !')
   else:
-      print 'job_name : %s' % FLAGS.job_name
+      print ('job_name : ' + FLAGS.job_name)
   if FLAGS.task_index is None or FLAGS.task_index == '':
       raise ValueError('Must specify an explicit task_index!')
   else:
-      print 'task_index : %d' % FLAGS.task_index
+      print ('task_index : ' + str(FLAGS.task_index))
 
   ps_spec = FLAGS.ps_hosts.split(',')
   worker_spec = FLAGS.worker_hosts.split(',')
@@ -796,12 +796,12 @@ def main(_):
     server.join()
   elif FLAGS.job_name == "worker":
 
-  is_chief = (FLAGS.task_index == 0)
-  # worker_device = '/job:worker/task%d/cpu:0' % FLAGS.task_index
-  # Between-graph replication
-  with tf.device(tf.train.replica_device_setter(
-  worker_device="/job:worker/task:%d" % FLAGS.task_index,
-  cluster=cluster)):
+    is_chief = (FLAGS.task_index == 0)
+    # worker_device = '/job:worker/task%d/cpu:0' % FLAGS.task_index
+    # Between-graph replication
+    with tf.device(tf.train.replica_device_setter(
+    worker_device="/job:worker/task:%d" % FLAGS.task_index,
+    cluster=cluster)):
 
       global_step = tf.Variable(0, name='global_step', trainable=False)  # 创建纪录全局训练步数变量
 
@@ -867,14 +867,14 @@ def main(_):
       sess.run(init)
 
       if is_chief:
-          print 'Worker %d: Initailizing session...' % FLAGS.task_index
+          print ('Worker %d: Initailizing session...' % FLAGS.task_index)
       else:
-          print 'Worker %d: Waiting for session to be initaialized...' % FLAGS.task_index
+          print ('Worker %d: Waiting for session to be initaialized...' % FLAGS.task_index)
       sess = sv.prepare_or_wait_for_session(server.target)
-      print 'Worker %d: Session initialization  complete.' % FLAGS.task_index
+      print ('Worker %d: Session initialization  complete.' % FLAGS.task_index)
 
       time_begin = time.time()
-      print 'Traing begins @ %f' % time_begin
+      print ('Traing begins @ %f' % time_begin)
 
       # Run the training for as many cycles as requested on the command line.
       for i in range(FLAGS.how_many_training_steps):
@@ -939,9 +939,9 @@ def main(_):
           test_accuracy * 100, len(test_bottlenecks)))
 
       time_end = time.time()
-      print 'Training ends @ %f' % time_end
+      print ('Training ends @ %f' % time_end)
       train_time = time_end - time_begin
-      print 'Training elapsed time:%f s' % train_time
+      print ('Training elapsed time:%f s' % train_time)
 
       # Storing Session file
       save_path = saver.save(sess, "/tmp/model.ckpt")
@@ -1126,7 +1126,7 @@ if __name__ == '__main__':
   )
   parser.add_argument(
       '--ps_hosts',
-      type=string,
+      type=str,
       default=0,
       help="""\
       Comma-separated list of hostname:port pairs.\
@@ -1134,7 +1134,7 @@ if __name__ == '__main__':
   )
   parser.add_argument(
       '--worker_hosts',
-      type=string,
+      type=str,
       default=0,
       help="""\
       Comma-separated list of hostname:port pairs.\
@@ -1142,7 +1142,7 @@ if __name__ == '__main__':
   )
   parser.add_argument(
       '--job_name',
-      type=string,
+      type=str,
       default=0,
       help="""\
       job name: worker or ps.\
@@ -1161,6 +1161,6 @@ if __name__ == '__main__':
   FLAGS, unparsed = parser.parse_known_args()
 
   # # Test printing all arguments
-  # print (FLAGS.image_dir)
-  # print (FLAGS.task_index)
+  print ("worker_hosts = " + str(FLAGS.worker_hosts))
+  print ("ps_hosts = " + FLAGS.ps_hosts)
   tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
