@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*
 # Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -85,20 +86,7 @@ from tensorflow.python.util import compat
 
 flags = tf.app.flags
 
-# 参数服务器parameter server节点
-flags.DEFINE_string('ps_hosts', '', 'Comma-separated list of hostname:port pairs')
-# 两个worker节点
-flags.DEFINE_string('worker_hosts', '',
-                    'Comma-separated list of hostname:port pairs')
-# 设置job name参数
-flags.DEFINE_string('job_name', None, 'job name: worker or ps')
-# 设置任务的索引
-flags.DEFINE_integer('task_index', None, 'Index of task within the job')
-# 选择异步并行，同步并行
-flags.DEFINE_integer("issync", None, "是否采用分布式的同步模式，1表示同步模式，0表示异步模式")
-
-# FLAGS = None
-FLAGS = flags.FLAGS
+FLAGS = None
 
 # These are all parameters that are tied to the particular model architecture
 # we're using for Inception v3. These include things like tensor names and their
@@ -1073,6 +1061,14 @@ if __name__ == '__main__':
       input pixels up or down by.\
       """
   )
+  parser.add_argument(
+      '--task_index',
+      type=int,
+      default=0,
+      help="""\
+      Index of task within the job.\
+      """
+    )
   FLAGS, unparsed = parser.parse_known_args()
 
   # Test printing all arguments
