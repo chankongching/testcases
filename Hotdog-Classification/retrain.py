@@ -776,136 +776,191 @@ def main(_):
     tf.gfile.DeleteRecursively(FLAGS.summaries_dir)
   tf.gfile.MakeDirs(FLAGS.summaries_dir)
 
-  # Set up the pre-trained graph.
-  maybe_download_and_extract()
-  graph, bottleneck_tensor, jpeg_data_tensor, resized_image_tensor = (
-      create_inception_graph())
-
-  # Look at the folder structure, and create lists of all the images.
-  image_lists = create_image_lists(FLAGS.image_dir, FLAGS.testing_percentage,
-                                   FLAGS.validation_percentage)
-  class_count = len(image_lists.keys())
-  if class_count == 0:
-    print('No valid folders of images found at ' + FLAGS.image_dir)
-    return -1
-  if class_count == 1:
-    print('Only one valid folder of images found at ' + FLAGS.image_dir +
-          ' - multiple classes are needed for classification.')
-    return -1
-
-  # See if the command-line flags mean we're applying any distortions.
-  do_distort_images = should_distort_images(
-      FLAGS.flip_left_right, FLAGS.random_crop, FLAGS.random_scale,
-      FLAGS.random_brightness)
-  sess = tf.Session()
-
-  if do_distort_images:
-    # We will be applying distortions, so setup the operations we'll need.
-    distorted_jpeg_data_tensor, distorted_image_tensor = add_input_distortions(
-        FLAGS.flip_left_right, FLAGS.random_crop, FLAGS.random_scale,
-        FLAGS.random_brightness)
+  if FLAGS.job_name is None or FLAGS.job_name == '':
+    raise ValueError('Must specify an explicit job_name !')
   else:
-    # We'll make sure we've calculated the 'bottleneck' image summaries and
-    # cached them on disk.
-    cache_bottlenecks(sess, image_lists, FLAGS.image_dir, FLAGS.bottleneck_dir,
-                      jpeg_data_tensor, bottleneck_tensor)
+    print 'job_name : %s' % FLAGS.job_name
+  if FLAGS.task_index is None or FLAGS.task_index == '':
+    raise ValueError('Must specify an explicit task_index!')
+  else:
+    print 'task_index : %d' % FLAGS.task_index
 
-  # Add the new layer that we'll be training.
-  (train_step, cross_entropy, bottleneck_input, ground_truth_input,
-   final_tensor) = add_final_training_ops(len(image_lists.keys()),
-                                          FLAGS.final_tensor_name,
-                                          bottleneck_tensor)
+  ps_spec = FLAGS.ps_hosts.split(',')
+  worker_spec = FLAGS.worker_hosts.split(',')
 
-  # Create the operations we need to evaluate the accuracy of our new layer.
-  evaluation_step, prediction = add_evaluation_step(
-      final_tensor, ground_truth_input)
+  # 创建集群
+  num_worker = len(worker_spec)
+  cluster = tf.train.ClusterSpec({'ps': ps_spec, 'worker': worker_spec})
+  server = tf.train.Server(cluster, job_name=FLAGS.job_name, task_index=FLAGS.task_index)
+  if FLAGS.job_name == 'ps':
+    server.join()
+  elif FLAGS.job_name == "worker":
 
-  # Merge all the summaries and write them out to /tmp/retrain_logs (by default)
-  merged = tf.summary.merge_all()
-  train_writer = tf.summary.FileWriter(FLAGS.summaries_dir + '/train',
-                                       sess.graph)
-  validation_writer = tf.summary.FileWriter(FLAGS.summaries_dir + '/validation')
+  is_chief = (FLAGS.task_index == 0)
+  # worker_device = '/job:worker/task%d/cpu:0' % FLAGS.task_index
+  # Between-graph replication
+  with tf.device(tf.train.replica_device_setter(
+  worker_device="/job:worker/task:%d" % FLAGS.task_index,
+  cluster=cluster)):
 
-  # Set up all our weights to their initial default values.
-  init = tf.global_variables_initializer()
-  sess.run(init)
+      global_step = tf.Variable(0, name='global_step', trainable=False)  # 创建纪录全局训练步数变量
 
-  # Run the training for as many cycles as requested on the command line.
-  for i in range(FLAGS.how_many_training_steps):
-    # Get a batch of input bottleneck values, either calculated fresh every time
-    # with distortions applied, or from the cache stored on disk.
-    if do_distort_images:
-      train_bottlenecks, train_ground_truth = get_random_distorted_bottlenecks(
-          sess, image_lists, FLAGS.train_batch_size, 'training',
-          FLAGS.image_dir, distorted_jpeg_data_tensor,
-          distorted_image_tensor, resized_image_tensor, bottleneck_tensor)
-    else:
-      train_bottlenecks, train_ground_truth, _ = get_random_cached_bottlenecks(
-          sess, image_lists, FLAGS.train_batch_size, 'training',
-          FLAGS.bottleneck_dir, FLAGS.image_dir, jpeg_data_tensor,
-          bottleneck_tensor)
-    # Feed the bottlenecks and ground truth into the graph, and run a training
-    # step. Capture training summaries for TensorBoard with the `merged` op.
-    train_summary, _ = sess.run([merged, train_step],
-             feed_dict={bottleneck_input: train_bottlenecks,
-                        ground_truth_input: train_ground_truth})
-    train_writer.add_summary(train_summary, i)
+      # Set up the pre-trained graph.
+      maybe_download_and_extract()
+      graph, bottleneck_tensor, jpeg_data_tensor, resized_image_tensor = (
+          create_inception_graph())
 
-    # Every so often, print out how well the graph is training.
-    is_last_step = (i + 1 == FLAGS.how_many_training_steps)
-    if (i % FLAGS.eval_step_interval) == 0 or is_last_step:
-      train_accuracy, cross_entropy_value = sess.run(
-          [evaluation_step, cross_entropy],
-          feed_dict={bottleneck_input: train_bottlenecks,
-                     ground_truth_input: train_ground_truth})
-      print('%s: Step %d: Train accuracy = %.1f%%' % (datetime.now(), i,
-                                                      train_accuracy * 100))
-      print('%s: Step %d: Cross entropy = %f' % (datetime.now(), i,
-                                                 cross_entropy_value))
-      validation_bottlenecks, validation_ground_truth, _ = (
-          get_random_cached_bottlenecks(
-              sess, image_lists, FLAGS.validation_batch_size, 'validation',
+      # Look at the folder structure, and create lists of all the images.
+      image_lists = create_image_lists(FLAGS.image_dir, FLAGS.testing_percentage,
+                                       FLAGS.validation_percentage)
+      class_count = len(image_lists.keys())
+      if class_count == 0:
+        print('No valid folders of images found at ' + FLAGS.image_dir)
+        return -1
+      if class_count == 1:
+        print('Only one valid folder of images found at ' + FLAGS.image_dir +
+              ' - multiple classes are needed for classification.')
+        return -1
+
+      # See if the command-line flags mean we're applying any distortions.
+      do_distort_images = should_distort_images(
+          FLAGS.flip_left_right, FLAGS.random_crop, FLAGS.random_scale,
+          FLAGS.random_brightness)
+      sess = tf.Session()
+
+      if do_distort_images:
+        # We will be applying distortions, so setup the operations we'll need.
+        distorted_jpeg_data_tensor, distorted_image_tensor = add_input_distortions(
+            FLAGS.flip_left_right, FLAGS.random_crop, FLAGS.random_scale,
+            FLAGS.random_brightness)
+      else:
+        # We'll make sure we've calculated the 'bottleneck' image summaries and
+        # cached them on disk.
+        cache_bottlenecks(sess, image_lists, FLAGS.image_dir, FLAGS.bottleneck_dir,
+                          jpeg_data_tensor, bottleneck_tensor)
+
+      # Add the new layer that we'll be training.
+      (train_step, cross_entropy, bottleneck_input, ground_truth_input,
+       final_tensor) = add_final_training_ops(len(image_lists.keys()),
+                                              FLAGS.final_tensor_name,
+                                              bottleneck_tensor)
+
+      # Create the operations we need to evaluate the accuracy of our new layer.
+      evaluation_step, prediction = add_evaluation_step(
+          final_tensor, ground_truth_input)
+
+      # Merge all the summaries and write them out to /tmp/retrain_logs (by default)
+      merged = tf.summary.merge_all()
+      train_writer = tf.summary.FileWriter(FLAGS.summaries_dir + '/train',
+                                           sess.graph)
+      validation_writer = tf.summary.FileWriter(FLAGS.summaries_dir + '/validation')
+
+      # Set up all our weights to their initial default values.
+      init = tf.global_variables_initializer()
+
+      # Add ops to save and restore all the variables.
+      saver = tf.train.Saver()
+
+      sv = tf.train.Supervisor(is_chief=is_chief, logdir=summaries_dir, init_op=init, recovery_wait_secs=1,
+                             global_step=global_step)
+
+      sess.run(init)
+
+      if is_chief:
+          print 'Worker %d: Initailizing session...' % FLAGS.task_index
+      else:
+          print 'Worker %d: Waiting for session to be initaialized...' % FLAGS.task_index
+      sess = sv.prepare_or_wait_for_session(server.target)
+      print 'Worker %d: Session initialization  complete.' % FLAGS.task_index
+
+      time_begin = time.time()
+      print 'Traing begins @ %f' % time_begin
+
+      # Run the training for as many cycles as requested on the command line.
+      for i in range(FLAGS.how_many_training_steps):
+        # Get a batch of input bottleneck values, either calculated fresh every time
+        # with distortions applied, or from the cache stored on disk.
+        if do_distort_images:
+          train_bottlenecks, train_ground_truth = get_random_distorted_bottlenecks(
+              sess, image_lists, FLAGS.train_batch_size, 'training',
+              FLAGS.image_dir, distorted_jpeg_data_tensor,
+              distorted_image_tensor, resized_image_tensor, bottleneck_tensor)
+        else:
+          train_bottlenecks, train_ground_truth, _ = get_random_cached_bottlenecks(
+              sess, image_lists, FLAGS.train_batch_size, 'training',
               FLAGS.bottleneck_dir, FLAGS.image_dir, jpeg_data_tensor,
-              bottleneck_tensor))
-      # Run a validation step and capture training summaries for TensorBoard
-      # with the `merged` op.
-      validation_summary, validation_accuracy = sess.run(
-          [merged, evaluation_step],
-          feed_dict={bottleneck_input: validation_bottlenecks,
-                     ground_truth_input: validation_ground_truth})
-      validation_writer.add_summary(validation_summary, i)
-      print('%s: Step %d: Validation accuracy = %.1f%% (N=%d)' %
-            (datetime.now(), i, validation_accuracy * 100,
-             len(validation_bottlenecks)))
+              bottleneck_tensor)
+        # Feed the bottlenecks and ground truth into the graph, and run a training
+        # step. Capture training summaries for TensorBoard with the `merged` op.
+        train_summary, _ = sess.run([merged, train_step],
+                 feed_dict={bottleneck_input: train_bottlenecks,
+                            ground_truth_input: train_ground_truth})
+        train_writer.add_summary(train_summary, i)
 
-  # We've completed all our training, so run a final test evaluation on
-  # some new images we haven't used before.
-  test_bottlenecks, test_ground_truth, test_filenames = (
-      get_random_cached_bottlenecks(sess, image_lists, FLAGS.test_batch_size,
-                                    'testing', FLAGS.bottleneck_dir,
-                                    FLAGS.image_dir, jpeg_data_tensor,
-                                    bottleneck_tensor))
-  test_accuracy, predictions = sess.run(
-      [evaluation_step, prediction],
-      feed_dict={bottleneck_input: test_bottlenecks,
-                 ground_truth_input: test_ground_truth})
-  print('Final test accuracy = %.1f%% (N=%d)' % (
-      test_accuracy * 100, len(test_bottlenecks)))
+        # Every so often, print out how well the graph is training.
+        is_last_step = (i + 1 == FLAGS.how_many_training_steps)
+        if (i % FLAGS.eval_step_interval) == 0 or is_last_step:
+          train_accuracy, cross_entropy_value = sess.run(
+              [evaluation_step, cross_entropy],
+              feed_dict={bottleneck_input: train_bottlenecks,
+                         ground_truth_input: train_ground_truth})
+          print('%s: Step %d: Train accuracy = %.1f%%' % (datetime.now(), i,
+                                                          train_accuracy * 100))
+          print('%s: Step %d: Cross entropy = %f' % (datetime.now(), i,
+                                                     cross_entropy_value))
+          validation_bottlenecks, validation_ground_truth, _ = (
+              get_random_cached_bottlenecks(
+                  sess, image_lists, FLAGS.validation_batch_size, 'validation',
+                  FLAGS.bottleneck_dir, FLAGS.image_dir, jpeg_data_tensor,
+                  bottleneck_tensor))
+          # Run a validation step and capture training summaries for TensorBoard
+          # with the `merged` op.
+          validation_summary, validation_accuracy = sess.run(
+              [merged, evaluation_step],
+              feed_dict={bottleneck_input: validation_bottlenecks,
+                         ground_truth_input: validation_ground_truth})
+          validation_writer.add_summary(validation_summary, i)
+          print('%s: Step %d: Validation accuracy = %.1f%% (N=%d)' %
+                (datetime.now(), i, validation_accuracy * 100,
+                 len(validation_bottlenecks)))
 
-  if FLAGS.print_misclassified_test_images:
-    print('=== MISCLASSIFIED TEST IMAGES ===')
-    for i, test_filename in enumerate(test_filenames):
-      if predictions[i] != test_ground_truth[i].argmax():
-        print('%70s  %s' % (test_filename,
-                            list(image_lists.keys())[predictions[i]]))
+      # We've completed all our training, so run a final test evaluation on
+      # some new images we haven't used before.
+      test_bottlenecks, test_ground_truth, test_filenames = (
+          get_random_cached_bottlenecks(sess, image_lists, FLAGS.test_batch_size,
+                                        'testing', FLAGS.bottleneck_dir,
+                                        FLAGS.image_dir, jpeg_data_tensor,
+                                        bottleneck_tensor))
+      test_accuracy, predictions = sess.run(
+          [evaluation_step, prediction],
+          feed_dict={bottleneck_input: test_bottlenecks,
+                     ground_truth_input: test_ground_truth})
+      print('Final test accuracy = %.1f%% (N=%d)' % (
+          test_accuracy * 100, len(test_bottlenecks)))
 
-  # Write out the trained graph and labels with the weights stored as constants.
-  output_graph_def = graph_util.convert_variables_to_constants(
-      sess, graph.as_graph_def(), [FLAGS.final_tensor_name])
-  with gfile.FastGFile(FLAGS.output_graph, 'wb') as f:
-    f.write(output_graph_def.SerializeToString())
-  with gfile.FastGFile(FLAGS.output_labels, 'w') as f:
-    f.write('\n'.join(image_lists.keys()) + '\n')
+      time_end = time.time()
+      print 'Training ends @ %f' % time_end
+      train_time = time_end - time_begin
+      print 'Training elapsed time:%f s' % train_time
+
+      # Storing Session file
+      save_path = saver.save(sess, "/tmp/model.ckpt")
+      print("Model saved in path: %s" % save_path)
+
+      if FLAGS.print_misclassified_test_images:
+        print('=== MISCLASSIFIED TEST IMAGES ===')
+        for i, test_filename in enumerate(test_filenames):
+          if predictions[i] != test_ground_truth[i].argmax():
+            print('%70s  %s' % (test_filename,
+                                list(image_lists.keys())[predictions[i]]))
+
+      # Write out the trained graph and labels with the weights stored as constants.
+      output_graph_def = graph_util.convert_variables_to_constants(
+          sess, graph.as_graph_def(), [FLAGS.final_tensor_name])
+      with gfile.FastGFile(FLAGS.output_graph, 'wb') as f:
+        f.write(output_graph_def.SerializeToString())
+      with gfile.FastGFile(FLAGS.output_labels, 'w') as f:
+        f.write('\n'.join(image_lists.keys()) + '\n')
 
 
 if __name__ == '__main__':
@@ -1068,10 +1123,44 @@ if __name__ == '__main__':
       help="""\
       Index of task within the job.\
       """
-    )
+  )
+  parser.add_argument(
+      '--ps_hosts',
+      type=string,
+      default=0,
+      help="""\
+      Comma-separated list of hostname:port pairs.\
+      """
+  )
+  parser.add_argument(
+      '--worker_hosts',
+      type=string,
+      default=0,
+      help="""\
+      Comma-separated list of hostname:port pairs.\
+      """
+  )
+  parser.add_argument(
+      '--job_name',
+      type=string,
+      default=0,
+      help="""\
+      job name: worker or ps.\
+      """
+  )
+  parser.add_argument(
+      '--issync',
+      type=int,
+      default=0,
+      help="""\
+      是否采用分布式的同步模式，1表示同步模式，0表示异步模式.\
+      """
+  )
+
+
   FLAGS, unparsed = parser.parse_known_args()
 
-  # Test printing all arguments
-  print (FLAGS.image_dir)
-  print (FLAGS.task_index)
-  # tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
+  # # Test printing all arguments
+  # print (FLAGS.image_dir)
+  # print (FLAGS.task_index)
+  tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
