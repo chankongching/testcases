@@ -771,6 +771,7 @@ def add_evaluation_step(result_tensor, ground_truth_tensor):
 
 
 def main(_):
+  print ("Inside main function")
   # Setup the directory we'll write summaries to for TensorBoard
   if tf.gfile.Exists(FLAGS.summaries_dir):
     tf.gfile.DeleteRecursively(FLAGS.summaries_dir)
@@ -792,6 +793,7 @@ def main(_):
   num_worker = len(worker_spec)
   cluster = tf.train.ClusterSpec({'ps': ps_spec, 'worker': worker_spec})
   server = tf.train.Server(cluster, job_name=FLAGS.job_name, task_index=FLAGS.task_index)
+  print ("After defining server")
   if FLAGS.job_name == 'ps':
     server.join()
   elif FLAGS.job_name == "worker":
@@ -802,7 +804,7 @@ def main(_):
     with tf.device(tf.train.replica_device_setter(
     worker_device="/job:worker/task:%d" % FLAGS.task_index,
     cluster=cluster)):
-
+      print ("Executing cluster")
       global_step = tf.Variable(0, name='global_step', trainable=False)  # 创建纪录全局训练步数变量
 
       # Set up the pre-trained graph.
@@ -964,6 +966,7 @@ def main(_):
 
 
 if __name__ == '__main__':
+  print ("Executing main function")
   parser = argparse.ArgumentParser()
   parser.add_argument(
       '--image_dir',
@@ -1160,7 +1163,7 @@ if __name__ == '__main__':
 
   FLAGS, unparsed = parser.parse_known_args()
 
-  # # Test printing all arguments
-  print ("worker_hosts = " + str(FLAGS.worker_hosts))
-  print ("ps_hosts = " + FLAGS.ps_hosts)
+  # # # Test printing all arguments
+  # print ("worker_hosts = " + str(FLAGS.worker_hosts))
+  # print ("ps_hosts = " + FLAGS.ps_hosts)
   tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
