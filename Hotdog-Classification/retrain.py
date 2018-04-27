@@ -795,7 +795,7 @@ def main(_):
   cluster = tf.train.ClusterSpec({'ps': ps_spec, 'worker': worker_spec})
   print ("After defining Cluster")
   print ("Job name = " + FLAGS.job_name)
-  print ("task index = " + FLAGS.task_index)
+  print ("task index = " + str(FLAGS.task_index))
   server = tf.train.Server(cluster, job_name=FLAGS.job_name, task_index=FLAGS.task_index)
   print ("After defining server")
   if FLAGS.job_name == 'ps':
