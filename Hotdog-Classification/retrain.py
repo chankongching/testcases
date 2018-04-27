@@ -779,11 +779,11 @@ def main(_):
   if FLAGS.job_name is None or FLAGS.job_name == '':
     raise ValueError('Must specify an explicit job_name !')
   else:
-    print 'job_name : %s' % FLAGS.job_name
+      print 'job_name : %s' % FLAGS.job_name
   if FLAGS.task_index is None or FLAGS.task_index == '':
-    raise ValueError('Must specify an explicit task_index!')
+      raise ValueError('Must specify an explicit task_index!')
   else:
-    print 'task_index : %d' % FLAGS.task_index
+      print 'task_index : %d' % FLAGS.task_index
 
   ps_spec = FLAGS.ps_hosts.split(',')
   worker_spec = FLAGS.worker_hosts.split(',')
