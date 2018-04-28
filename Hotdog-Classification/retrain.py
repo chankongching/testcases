@@ -879,7 +879,7 @@ def main(_):
         sv = tf.train.Supervisor(is_chief=is_chief, logdir=FLAGS.summaries_dir, init_op=init, recovery_wait_secs=1,
                              global_step=global_step)
 
-        sess.run(init)
+        # sess.run(init)
 
         if is_chief:
             print ('Worker %d: Initailizing session...' % FLAGS.task_index)
