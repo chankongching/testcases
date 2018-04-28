@@ -74,6 +74,7 @@ import re
 import struct
 import sys
 import tarfile
+import time
 
 import numpy as np
 from six.moves import urllib
