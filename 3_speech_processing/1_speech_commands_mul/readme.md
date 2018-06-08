@@ -5,7 +5,6 @@ Build a basic speech recognition network that recognizes ten different words. It
 Source from:
 
 https://www.tensorflow.org/tutorials/audio_recognition
----------
 
 Training
 =========
