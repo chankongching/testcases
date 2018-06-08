@@ -9,9 +9,11 @@ https://www.tensorflow.org/tutorials/audio_recognition
 #Training
 
 PS node(192.168.0.101):
+
     python ./code/train_mul.py --data_dir=./speech_dataset/  --summaries_dir=./result/retrain_logs  --train_dir=./result/speech_commands_train  --how_many_training_steps='1000,2000,3000'  --learning_rate='0.01,0.001,0.0001' --batch_size=1000 --ps_hosts="192.168.0.101:2222"   --worker_hosts="192.168.0.100:2222"   --job_name="ps"   --task_index=0
 
 worker node(192.168.0.100):
+
     python ./code/train_mul.py --data_dir=./speech_dataset/  --summaries_dir=./result/retrain_logs  --train_dir=./result/speech_commands_train  --how_many_training_steps='1000,2000,3000'  --learning_rate='0.01,0.001,0.0001' --batch_size=1000 --ps_hosts="192.168.0.101:2222"   --worker_hosts="192.168.0.100:2222"   --job_name="worker"   --task_index=0
 
 #After training:
