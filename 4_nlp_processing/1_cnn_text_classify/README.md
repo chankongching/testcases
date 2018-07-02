@@ -61,12 +61,6 @@ Log placement of ops on devices
 Train:
 
 ```bash
-./train.py
-```
-
-Train, including the Kaggle dataset:
-
-```bash
 nvidia-docker run -it -p 2222:2222 -v /home/miner/tensorflow/cnn_text_classify:/root/code tensorflow/tensorflow:1.5.0-gpu  python ./code/train_mul.py --data_file=./code/data/train-all.txt --out_dir=./result --num_epochs=10 --ps_hosts="192.168.0.100:2222"   --worker_hosts="192.168.0.101:2222"   --job_name="ps"   --task_index=0
 ```
 
