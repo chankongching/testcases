@@ -9,16 +9,13 @@ Guided back-prop
 ![alt tag](images/gradcam_results.png)
 
 
-# Instructions
+# Real-time emotion demo:
 
-## Real-time emotion demo:
-
-Real-time demo:
 <div align='center'>
   <img src='images/color_demo.gif' width='400px'>
 </div>
 
-### Requirements:
+## Requirements:
 >keras==2.0.5
 >tensorflow==1.7.0
 >pandas==0.19.1
@@ -27,17 +24,16 @@ Real-time demo:
 >statistics
 >opencv2-python==3.4.0
 
-### Run:
+## Run:
 > python3 video_emotion_color_demo.py
 
-##Real-time-swapface demo:
+#Real-time-swapface demo:
 
-Real-time-swapface demo:
 <div align='center'>
   <img src='images/faceswap_demo.gif' width='400px'>
 </div>
 
-### Requirements:
+## Requirements:
 >keras==2.0.5
 >tensorflow==1.7.0
 >pandas==0.19.1
@@ -57,5 +53,5 @@ Confirm [cuda9.0+cudnn5.1],[cmake] and [vs2015 update3] already prepared
 
 Download and unzip shape_predictor_68_face_landmarks.dat from [here](http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2)
 
-### Run:
+## Run:
 > python3 video_emotion_color_swapface_demo.py
